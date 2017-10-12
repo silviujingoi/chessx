@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
@@ -16,8 +15,8 @@ import com.atlas.chessx.R;
  * TODO: document your custom view class.
  */
 public class BoardView extends View {
-    private Paint paintWhite, paintBlack;
-    private int contentWidth, contentHeight;
+    private Paint paintWhite, paintBlack, paintPieces;
+    private int contentWidth, contentHeight, squareSize;
 
     public BoardView(Context context) {
         super(context);
@@ -46,6 +45,10 @@ public class BoardView extends View {
 
         paintBlack = new Paint();
         paintBlack.setColor(Color.BLACK);
+
+        paintPieces = new TextPaint();
+        paintPieces.setTextSize(100);
+        paintPieces.setColor(Color.BLUE);
 
         a.recycle();
     }
@@ -78,16 +81,42 @@ public class BoardView extends View {
         contentHeight = getHeight() - paddingTop - paddingBottom;
 
         drawBoard(canvas);
-        drawPieces();
+        drawPieces(canvas);
     }
 
     private void drawBoard(Canvas canvas) {
-        canvas.drawRect(100, 100, 200, 200, paintBlack);
+        float maxSize = Math.min(contentHeight, contentWidth);
 
-        //TODO: Loop and draw all 64 squares
+        squareSize = (int) maxSize / 8;
+
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                Paint paint = (x+y) % 2 == 0 ? paintBlack : paintWhite;
+
+                canvas.drawRect(x*squareSize, y*squareSize, (x+1)*squareSize, (y+1)*squareSize, paint);
+            }
+        }
     }
 
     private void drawPieces(Canvas canvas) {
-        //TODO
+        String[][] blackPieces = new String[][] {{"R", "K", "B", "Q", "W", "B", "K", "R"},
+                                            {"P", "P", "P", "P", "P", "P", "P", "P"}};
+
+        for (int row = 0; row < blackPieces.length; row++) {
+            for (int col = 0; col < 8; col++) {
+                String piece = blackPieces[row][col];
+
+                float textWidth = paintPieces.measureText(piece);
+                float textHeight = paintPieces.getTextSize();
+
+                float textX = squareSize * col + squareSize / 2 - textWidth / 2;
+                float textY = squareSize * row + squareSize / 2 + textHeight / 2;
+                // TODO: fix textY
+
+                canvas.drawText(piece, textX, textY, paintPieces);
+            }
+        }
+
+        //TODO: add white pieces
     }
 }
